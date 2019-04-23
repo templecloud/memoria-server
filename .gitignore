@@ -5,6 +5,11 @@
 *.so
 *.dylib
 
+# Do not check in vendor directory,
+# NB: Run 'go mod vendor' to generate vendor directory.
+vendor
+dist
+
 # Test binary, build with `go test -c`
 *.test
 
