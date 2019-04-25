@@ -1,28 +1,55 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Login denotes the minimum requires details for logging in.
+// API is the main entry point into the API.
+type API struct {
+	db *mongo.Client
+}
+
+func (api *API) health(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"health": "ALIVE",
+	})
+}
+
+// Signup denotes the minimum requires details for logging in.
 type Signup struct {
 	Name string `form:"name" json:"name" binding:"required"`
 	Login
 }
 
-func signup(c *gin.Context) {
-	fmt.Println("handling signup...")
+func (api *API) signup(ctx *gin.Context) {
 	var signup Signup
-	e := c.BindJSON(&signup)
-	if e != nil {
-		fmt.Println("signup error: ", e)
-		c.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", e)})
+	unmarshallErr := ctx.BindJSON(&signup)
+	if unmarshallErr != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", unmarshallErr)})
 	} else {
-		fmt.Println("signup Signup: ", signup)
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		db := api.db.Database("memoria")
+		col := db.Collection("users")
+		filter := bson.M{"name": bson.M{"$eq": signup.Login.Email}}
+
+		var existingUser Signup
+		if readErr := col.FindOne(ctx, filter).Decode(&existingUser); readErr != nil {
+			_, createErr := col.InsertOne(ctx, signup)
+			if createErr != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", createErr)})
+			} else {
+				ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
+			}
+		} else {
+			ctx.JSON(http.StatusConflict, gin.H{"errorMessage": "User already registered."})
+		}
 	}
 }
 
@@ -32,35 +59,62 @@ type Login struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-func health(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"health": "ALIVE",
-	})
-}
-
-func login(c *gin.Context) {
-	fmt.Println("handling login...")
+func (api *API) login(ctx *gin.Context) {
 	var login Login
-	e := c.BindJSON(&login)
-	if e != nil {
-		fmt.Println("login error: ", e)
-		c.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", e)})
+	unmarshallErr := ctx.BindJSON(&login)
+	if unmarshallErr != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", unmarshallErr)})
 	} else {
-		fmt.Printf("signin Login: %+v\n", login)
-		if login.Email == "test" && login.Password == "test" {
-			c.JSON(http.StatusOK, gin.H{"status": "authorised"})
+		db := api.db.Database("memoria")
+		col := db.Collection("users")
+		filter := bson.M{"name": bson.M{"$eq": login.Email}}
+
+		var user Signup
+		if readErr := col.FindOne(ctx, filter).Decode(&user); readErr != nil {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"errorMessage": fmt.Sprintf("%s", readErr)})
+
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorised"})
+			if login.Email == user.Email && login.Password == user.Password {
+				ctx.JSON(http.StatusOK, gin.H{"status": "Authorised"})
+			} else {
+				ctx.JSON(http.StatusUnauthorized, gin.H{"status": "Unauthorised"})
+			}
 		}
 	}
+}
+
+func mongoClient() *mongo.Client {
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		fmt.Println("Failed to create client.")
+		log.Fatal(err)
+	}
+
+	if err := client.Connect(context.TODO()); err != nil {
+		fmt.Println("Failed to connect to mongodb.")
+		log.Fatal(err)
+	}
+
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		fmt.Println("Failed to ping mongodb.")
+		log.Fatal(err)
+	}
+
+	fmt.Println("Connected to MongoDB!")
+
+	return client
 }
 
 func main() {
 	fmt.Println("Starting memoria-server...")
 
-	r := gin.Default()
-	r.GET("/health", health)
-	r.POST("/signup", signup)
-	r.POST("/login", login)
-	r.Run()
+	db := mongoClient()
+	api := &API{db: db}
+	router := gin.Default()
+
+	router.GET("/health", api.health)
+	router.POST("/signup", api.signup)
+	router.POST("/login", api.login)
+	router.Run()
 }

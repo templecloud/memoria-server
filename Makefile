@@ -50,9 +50,9 @@ check-health:
 # Check the health endpoint.
 .PHONY: check-signup
 check-signup:
-	curl -X POST localhost:8080/signup -d '{ "name": "test", "email": "test", "password": "test" }'
+	curl -v -X POST localhost:8080/signup -d '{ "name": "test", "email": "test", "password": "test" }'
 
 # Check the health endpoint.
 .PHONY: check-login
 check-login:
-	curl localhost:8080/login -d '{ "email": "test", "password": "test" }'
+	curl -v localhost:8080/login -d '{ "email": "test", "password": "test" }'
