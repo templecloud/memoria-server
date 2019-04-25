@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -29,24 +30,58 @@ type Signup struct {
 	Login
 }
 
+// User is a `user` of the system.
+type User struct {
+	ID    string `json:"id" bson:"id" binding:"required"`
+	Email string `json:"email" bson:"email" binding:"required"`
+	Name  string `json:"name" bson:"name" binding:"optional"`
+}
+
+// Credential is the `encrypted password` of a `user`.
+type Credential struct {
+	UserID   string `json:"userId" bson:"userId" binding:"required"`
+	Password string `json:"password" bson:"password" binding:"required"`
+}
+
+// The signup Gin handler deals with creating new users.
 func (api *API) signup(ctx *gin.Context) {
 	var signup Signup
 	unmarshallErr := ctx.BindJSON(&signup)
 	if unmarshallErr != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", unmarshallErr)})
 	} else {
-		db := api.db.Database("memoria")
-		col := db.Collection("users")
-		filter := bson.M{"name": bson.M{"$eq": signup.Login.Email}}
 
-		var existingUser Signup
-		if readErr := col.FindOne(ctx, filter).Decode(&existingUser); readErr != nil {
-			_, createErr := col.InsertOne(ctx, signup)
-			if createErr != nil {
-				ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", createErr)})
-			} else {
-				ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
+		db := api.db.Database("memoria")
+		users := db.Collection("users")
+		creds := db.Collection("credentials")
+		userQuery := bson.M{"email": bson.M{"$eq": signup.Login.Email}}
+
+		var user User
+		// check if the email exists...
+		if readErr := users.FindOne(ctx, userQuery).Decode(&user); readErr != nil {
+			id := uuid.New().String()
+			var newUser = User{
+				ID:    string(id),
+				Email: signup.Email,
+				Name:  signup.Name,
 			}
+			var cred = Credential{
+				UserID:   newUser.ID,
+				Password: signup.Password,
+			}
+
+			// Create new user and credential entities.
+			_, cue := users.InsertOne(ctx, newUser)
+			if cue != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", cue)})
+			}
+			_, iue := creds.InsertOne(ctx, cred)
+			if iue != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", iue)})
+			}
+
+			ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
+
 		} else {
 			ctx.JSON(http.StatusConflict, gin.H{"errorMessage": "User already registered."})
 		}
@@ -66,20 +101,23 @@ func (api *API) login(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", unmarshallErr)})
 	} else {
 		db := api.db.Database("memoria")
-		col := db.Collection("users")
-		filter := bson.M{"name": bson.M{"$eq": login.Email}}
+		users := db.Collection("users")
+		creds := db.Collection("credentials")
+		userQuery := bson.M{"email": bson.M{"$eq": login.Email}}
 
-		var user Signup
-		if readErr := col.FindOne(ctx, filter).Decode(&user); readErr != nil {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"errorMessage": fmt.Sprintf("%s", readErr)})
-
-		} else {
-			if login.Email == user.Email && login.Password == user.Password {
-				ctx.JSON(http.StatusOK, gin.H{"status": "Authorised"})
-			} else {
-				ctx.JSON(http.StatusUnauthorized, gin.H{"status": "Unauthorised"})
+		var user User
+		if ue := users.FindOne(ctx, userQuery).Decode(&user); ue == nil {
+			credQuery := bson.M{"userId": bson.M{"$eq": user.ID}}
+			var cred Credential
+			if ce := creds.FindOne(ctx, credQuery).Decode(&cred); ce == nil {
+				if login.Email == user.Email && login.Password == cred.Password {
+					ctx.JSON(http.StatusOK, gin.H{"status": "Authorised"})
+					return
+				}
 			}
 		}
+
+		ctx.JSON(http.StatusUnauthorized, gin.H{"status": "Unauthorised"})
 	}
 }
 
@@ -111,8 +149,8 @@ func main() {
 
 	db := mongoClient()
 	api := &API{db: db}
-	router := gin.Default()
 
+	router := gin.Default()
 	router.GET("/health", api.health)
 	router.POST("/signup", api.signup)
 	router.POST("/login", api.login)
