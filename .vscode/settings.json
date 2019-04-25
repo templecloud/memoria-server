@@ -1,6 +1,9 @@
 {
     "cSpell.words": [
+        "bson",
         "gonic",
-        "signup"
+        "mongodb",
+        "signup",
+        "unmarshall"
     ]
 }
