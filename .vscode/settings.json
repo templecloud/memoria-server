@@ -4,6 +4,7 @@
         "gonic",
         "mongodb",
         "signup",
-        "unmarshall"
+        "unmarshall",
+        "uuid"
     ]
 }
