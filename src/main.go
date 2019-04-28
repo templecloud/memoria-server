@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -59,15 +60,30 @@ func (api *API) signup(ctx *gin.Context) {
 		var user User
 		// check if the email exists...
 		if readErr := users.FindOne(ctx, userQuery).Decode(&user); readErr != nil {
+
 			id := uuid.New().String()
 			var newUser = User{
 				ID:    string(id),
 				Email: signup.Email,
 				Name:  signup.Name,
 			}
+
+			pwd := signup.Password
+			pwe := validate(pwd)
+			if pwe != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", pwe)})
+				return
+			}
+
+
+			hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
+			if err != nil {
+				log.Println(err)
+			}
+
 			var cred = Credential{
 				UserID:   newUser.ID,
-				Password: signup.Password,
+				Password: string(hash),
 			}
 
 			// Create new user and credential entities.
@@ -86,6 +102,11 @@ func (api *API) signup(ctx *gin.Context) {
 			ctx.JSON(http.StatusConflict, gin.H{"errorMessage": "User already registered."})
 		}
 	}
+}
+
+// Validate checks a password and returns an error if it is invalid.
+func validate(password string) error {
+	return nil
 }
 
 // Login denotes the minimum requires details for registering.
@@ -110,7 +131,8 @@ func (api *API) login(ctx *gin.Context) {
 			credQuery := bson.M{"userId": bson.M{"$eq": user.ID}}
 			var cred Credential
 			if ce := creds.FindOne(ctx, credQuery).Decode(&cred); ce == nil {
-				if login.Email == user.Email && login.Password == cred.Password {
+				if login.Email == user.Email {
+					bcrypt.CompareHashAndPassword([]byte(cred.Password), []byte(login.Password))
 					ctx.JSON(http.StatusOK, gin.H{"status": "Authorised"})
 					return
 				}

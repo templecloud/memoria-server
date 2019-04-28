@@ -16,8 +16,8 @@ GOOS="${OS}"
 # go mod init
 
 # Run
-.PHONY: run
-run:
+.PHONY: dev
+dev:
 	go run src/main.go
 
 #  Vendor
@@ -47,12 +47,12 @@ clean:
 check-health:
 	curl localhost:8080/health
 
-# Check the health endpoint.
+# Check the signup endpoint.
 .PHONY: check-signup
 check-signup:
 	curl -v -X POST localhost:8080/signup -d '{ "name": "test", "email": "test", "password": "test" }'
 
-# Check the health endpoint.
+# Check the login endpoint.
 .PHONY: check-login
 check-login:
 	curl -v localhost:8080/login -d '{ "email": "test", "password": "test" }'
