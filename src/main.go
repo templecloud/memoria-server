@@ -184,6 +184,51 @@ func (api *API) login(ctx *gin.Context) {
 	}
 }
 
+// Middleware
+
+ func JWTMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		// Retrieve the cookie token if it is present.
+		tokenStr, err := ctx.Cookie("token")
+		fmt.Printf("tokenStr: %s\n", tokenStr)
+		if err != nil {
+			if err == http.ErrNoCookie {
+				ctx.AbortWithStatus(http.StatusUnauthorized)
+				return
+			}
+			ctx.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		// Parse the token string into a token with claims.
+		// var claims Claims
+		claims := &Claims{}
+		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+			return jwtKey, nil
+		})
+
+		fmt.Printf("token: %+v\n", token)
+		fmt.Printf("claims: %+v\n", claims)
+
+		// Check the token is valid (authenticates and has not expired)
+		if !token.Valid {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		if err != nil {
+			if err == jwt.ErrSignatureInvalid {
+				ctx.AbortWithStatus(http.StatusUnauthorized)
+				return
+			}
+			ctx.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+	}
+}
+
+// Mongo Client
+
 func mongoClient() *mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
@@ -214,8 +259,14 @@ func main() {
 	api := &API{db: db}
 
 	router := gin.Default()
-	router.GET("/health", api.health)
-	router.POST("/signup", api.signup)
-	router.POST("/login", api.login)
+
+	public := router.Group("/api/v1")
+	public.POST("/signup", api.signup)
+	public.POST("/login", api.login)
+
+	private := router.Group("/api/v1")
+	private.Use(JWTMiddleware())
+	private.GET("/health", api.health)
+
 	router.Run()
 }
