@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -115,6 +117,15 @@ type Login struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
+// Create the JWT key used to create the signature
+var jwtKey = []byte("todo-create-managed-key")
+
+// Claims are the JWT token claims.
+type Claims struct {
+	UserID string `json:"userId"`
+	jwt.StandardClaims
+}
+
 func (api *API) login(ctx *gin.Context) {
 	var login Login
 	unmarshallErr := ctx.BindJSON(&login)
@@ -132,9 +143,39 @@ func (api *API) login(ctx *gin.Context) {
 			var cred Credential
 			if ce := creds.FindOne(ctx, credQuery).Decode(&cred); ce == nil {
 				if login.Email == user.Email {
-					bcrypt.CompareHashAndPassword([]byte(cred.Password), []byte(login.Password))
-					ctx.JSON(http.StatusOK, gin.H{"status": "Authorised"})
-					return
+					// Generate Hashed password
+					loginErr := bcrypt.CompareHashAndPassword([]byte(cred.Password), []byte(login.Password))
+					if loginErr == nil {
+						// Create the JWT claims, which includes the username and expiry time
+						expirationTime := time.Now().Add(5 * time.Minute)
+						claims := &Claims{
+							UserID: user.ID,
+							StandardClaims: jwt.StandardClaims{
+								// In JWT, the expiry time is expressed as unix milliseconds
+								ExpiresAt: expirationTime.Unix(),
+							},
+						}
+						// Declare the token with the HMAC algorithm used for signing, and the claims
+						token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+						// Create the JWT string
+						tokenString, err := token.SignedString(jwtKey)
+						if err != nil {
+							// If there is an error in creating the JWT return an internal server error
+							ctx.JSON(http.StatusInternalServerError, gin.H{"errorMessage": fmt.Sprintf("%s", unmarshallErr)})
+							return
+						}
+						// Finally, we set the client cookie for "token" as the JWT we just generated
+						// we also set an expiry time which is the same as the token itself
+						expiration := int(5 * 60)
+						path := ""
+						domain := ""
+						secure := true
+						httpOnly := true 
+						ctx.SetCookie("token", tokenString, expiration , path, domain, secure, httpOnly)
+
+						ctx.JSON(http.StatusOK, gin.H{"status": "Authorised"})
+						return
+					}
 				}
 			}
 		}
