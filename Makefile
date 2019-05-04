@@ -18,7 +18,7 @@ GOOS="${OS}"
 # Run
 .PHONY: dev
 dev:
-	go run src/main.go
+	go run cmd/memoria/main.go
 
 #  Vendor
 .PHONY: vendor
@@ -28,7 +28,7 @@ vendor:
 #  Build
 .PHONY: build
 build: clean vendor
-	ARCH=$(ARCH) OS=$(OS) VERSION=$(VERSION) go build -o $(DIST)/$(NAME) ./src/... 
+	ARCH=$(ARCH) OS=$(OS) VERSION=$(VERSION) go build -o $(DIST)/$(NAME) ./cmd/... 
 
 #  Test
 .PHONY: test
