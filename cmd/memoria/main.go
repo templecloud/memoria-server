@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	// Start the memoria api server.
+	// Start the Memoria API server.
 	boot.Start()
 }

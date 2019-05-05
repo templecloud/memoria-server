@@ -1,37 +1,45 @@
 package identity
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
+// Create the JWT key used to create the signature
+var jwtKey = []byte("todo-create-managed-key")
+
+// jwtClaims contains the 'claim' details for authorizing via JWT token. 
+type jwtClaims struct {
+	UserID string `json:"userId"`
+	jwt.StandardClaims
+}
+
+//-------------------------------------------------------------------------------------------------
+// Public Functions
+
+// JWTMiddleware is a Gin middleware handler function that handles the extraction and validation of 
+// JWT token cookies.
 func JWTMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		// Retrieve the cookie token if it is present.
 		tokenStr, err := ctx.Cookie("token")
-		fmt.Printf("tokenStr: %s\n", tokenStr)
 		if err != nil || tokenStr == "" {
 			if err == http.ErrNoCookie {
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
-			ctx.AbortWithStatus(http.StatusBadRequest)
+			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		// Parse the token string into a token with claims.
-		// var claims Claims
-		claims := &JWTClaims{}
+		claims := &jwtClaims{}
 		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})
-
-		fmt.Printf("token: %+v\n", token)
-		fmt.Printf("claims: %+v\n", claims)
 
 		// Check the token is valid (authenticates and has not expired)
 		if !token.Valid {

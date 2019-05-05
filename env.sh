@@ -3,7 +3,6 @@
 # See: go help modules
 export GO111MODULE=on
 
-
 export MONGO_NAME="mongodb"
 export MONGO_VERSION="4.1.9-bionic"
 

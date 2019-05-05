@@ -1,10 +1,9 @@
 package identity
 
-import (
-	"github.com/dgrijalva/jwt-go"
-)
+//-------------------------------------------------------------------------------------------------
+// Public Models
 
-// Signup denotes the minimum requires details for logging in.
+// Signup contains the details for logging in.
 type Signup struct {
 	Name string `form:"name" json:"name" binding:"required"`
 	Login
@@ -23,17 +22,8 @@ type Credential struct {
 	Password string `json:"password" bson:"password" binding:"required"`
 }
 
-// Login denotes the minimum requires details for registering.
+// Login contains the details for registering.
 type Login struct {
 	Email    string `form:"email" json:"email" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
 }
-
-// Claims are the JWT token claims.
-type JWTClaims struct {
-	UserID string `json:"userId"`
-	jwt.StandardClaims
-}
-
-// Create the JWT key used to create the signature
-var jwtKey = []byte("todo-create-managed-key")
