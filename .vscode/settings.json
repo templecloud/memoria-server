@@ -6,6 +6,7 @@
         "gonic",
         "mongodb",
         "signup",
+        "stretchr",
         "trjl",
         "unmarshall",
         "uuid"
