@@ -12,11 +12,14 @@ import (
 
 // Start initialises the Memoria API webserver.
 func Start() {
-
 	fmt.Println("Starting memoria-server...")
+	router := NewServer()
+	router.Run()
+}
 
+// NewServer creates a new Gin Engine server.
+func NewServer() *gin.Engine {
 	// Initialise resources.
-	//
 	mongo := persistence.MongoClient()
 	healthAPI := &health.API{}
 	identityAPI := identity.NewAPI(mongo)
@@ -33,8 +36,6 @@ func Start() {
 	private.Use(identity.JWTMiddleware())
 	private.GET("/health", healthAPI.Health)
 
-	// Start server.
-	//
-	router.Run()
-
+	return router
 }
+

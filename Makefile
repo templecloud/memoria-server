@@ -20,20 +20,25 @@ GOOS="${OS}"
 dev:
 	go run cmd/memoria/main.go
 
-#  Vendor
+# Vendor
 .PHONY: vendor
 vendor:
 	go mod vendor
 
-#  Build
+# Build
 .PHONY: build
 build: clean vendor
 	ARCH=$(ARCH) OS=$(OS) VERSION=$(VERSION) go build -o $(DIST)/$(NAME) ./cmd/... 
 
-#  Test
+# Test
 .PHONY: test
 test:
-	go -v test ./...
+	go test -v ./test...
+
+# E2E Test
+.PHONY: e2e
+e2e:
+	go test -v ./e2e/...
 
 # Clean
 .PHONY: clean
