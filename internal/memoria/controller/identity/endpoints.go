@@ -64,10 +64,12 @@ func (api *API) Signup(ctx *gin.Context) {
 		err = api.db.CreateUser(ctx, user)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", err)})
+			return
 		}
 		err = api.db.CreateCredential(ctx, cred)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"errorMessage": fmt.Sprintf("%s", err)})
+			return
 		}
 
 		ctx.Status(http.StatusOK)
