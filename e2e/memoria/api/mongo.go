@@ -19,9 +19,9 @@ func CreateNewContainer(image string) (string, error) {
 
 	hostBinding := nat.PortBinding{
 		HostIP:   "0.0.0.0",
-		HostPort: "8000",
+		HostPort: "27017",
 	}
-	containerPort, err := nat.NewPort("tcp", "80")
+	containerPort, err := nat.NewPort("tcp", "27017")
 	if err != nil {
 		panic("Unable to get the port")
 	}
@@ -54,5 +54,6 @@ func StopContainer(containerID string) error {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("Container %s is stopped", containerID)
 	return err
 }

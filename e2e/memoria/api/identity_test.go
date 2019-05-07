@@ -42,7 +42,6 @@ func invoke(
 func TestIdentity(t *testing.T) {
 
 	id, _ := CreateNewContainer("mongo:4.1.9-bionic")
-
 	router := boot.NewServer()
 
 	// curl -v --cookie "token=${JWT}" localhost:8080/api/v1/health
@@ -50,10 +49,18 @@ func TestIdentity(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, http.StatusUnauthorized, actual.Code)
 
-   	// curl -v localhost:8080/api/v1/login -d '{ "email": "test@test.com", "password": "test" }'
+	// curl -v -X POST localhost:8080/api/v1/signup -d '{ "name": "test-user", "email": "test@test.com", "password": "test" }
 	login := identity.Login{Email: "test@test.com", Password: "test"}
-	json, _ := json.Marshal(login)
-	reader := bytes.NewReader(json)
+	signup := identity.Signup{Name: "Test", Login: login}
+	body, _ := json.Marshal(signup)
+	reader := bytes.NewReader(body)
+	actual = invoke(router, "POST", "/api/v1/signup", reader, nil)
+	assert.NotNil(t, actual)
+	assert.Equal(t, http.StatusOK, actual.Code)
+
+   	// curl -v localhost:8080/api/v1/login -d '{ "email": "test@test.com", "password": "test" }'	
+	body, _ = json.Marshal(login)
+	reader = bytes.NewReader(body)
 	actual = invoke(router, "POST", "/api/v1/login", reader, nil)
 	assert.NotNil(t, actual)
 	assert.Equal(t, http.StatusOK, actual.Code)
