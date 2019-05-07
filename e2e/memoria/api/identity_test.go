@@ -40,6 +40,9 @@ func invoke(
 // NB: Still currently need to initialise MongoDB and ensure the User exists before executing the test.
 //
 func TestIdentity(t *testing.T) {
+
+	id, _ := CreateNewContainer("mongo:4.1.9-bionic")
+
 	router := boot.NewServer()
 
 	// curl -v --cookie "token=${JWT}" localhost:8080/api/v1/health
@@ -60,4 +63,6 @@ func TestIdentity(t *testing.T) {
 	actual = invoke(router, "GET", "/api/v1/health", nil, cookies)
 	assert.NotNil(t, actual)
 	assert.Equal(t, http.StatusOK, actual.Code)
+
+	_ = StopContainer(id)
 }
