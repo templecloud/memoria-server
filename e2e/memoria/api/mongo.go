@@ -10,6 +10,7 @@ import (
 	"github.com/docker/go-connections/nat"
 )
 
+// CreateNewContainer creates a new container instance from the image.
 func CreateNewContainer(image string) (string, error) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
@@ -40,10 +41,11 @@ func CreateNewContainer(image string) (string, error) {
 	}
 
 	cli.ContainerStart(context.Background(), cont.ID, types.ContainerStartOptions{})
-	fmt.Printf("Container %s is started", cont.ID)
+	fmt.Printf("Container %s is started\n", cont.ID)
 	return cont.ID, nil
 }
 
+// StopContainer stops the specified container.
 func StopContainer(containerID string) error {
 	cli, err := client.NewEnvClient()
 	if err != nil {
@@ -54,6 +56,22 @@ func StopContainer(containerID string) error {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Container %s is stopped", containerID)
+	fmt.Printf("Container %s is stopped\n", containerID)
+	return err
+}
+
+// RemoveContainer removes the specified container.
+func RemoveContainer(containerID string) error {
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		panic(err)
+	}
+	
+	opts := types.ContainerRemoveOptions{RemoveVolumes: true, RemoveLinks: false, Force: true}
+	err = cli.ContainerRemove(context.Background(), containerID, opts)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Container %s is removed\n", containerID)
 	return err
 }

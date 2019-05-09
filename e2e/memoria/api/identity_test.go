@@ -71,5 +71,6 @@ func TestIdentity(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, http.StatusOK, actual.Code)
 
-	_ = StopContainer(id)
+    _ = StopContainer(id)
+	_ = RemoveContainer(id)
 }
