@@ -12,6 +12,8 @@ import (
 
 	"github.com/templecloud/memoria-server/internal/memoria/boot"
 	"github.com/templecloud/memoria-server/internal/memoria/controller/identity"
+
+	"github.com/templecloud/memoria-server/e2e/memoria/framework"
 )
 
 func invoke(
@@ -41,7 +43,8 @@ func invoke(
 //
 func TestIdentity(t *testing.T) {
 
-	id, _ := CreateNewContainer("mongo:4.1.9-bionic")
+	db, err := framework.NewMongoDB().Create()
+	assert.NotNil(t, err)
 	router := boot.NewServer()
 
 	// curl -v --cookie "token=${JWT}" localhost:8080/api/v1/health
@@ -55,7 +58,7 @@ func TestIdentity(t *testing.T) {
 	body, _ := json.Marshal(signup)
 	reader := bytes.NewReader(body)
 	actual = invoke(router, "POST", "/api/v1/signup", reader, nil)
-	assert.NotNil(t, actual)
+	
 	assert.Equal(t, http.StatusOK, actual.Code)
 
    	// curl -v localhost:8080/api/v1/login -d '{ "email": "test@test.com", "password": "test" }'	
@@ -71,6 +74,6 @@ func TestIdentity(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, http.StatusOK, actual.Code)
 
-    _ = StopContainer(id)
-	_ = RemoveContainer(id)
+	db.Stop()
+	db.Clean()
 }
