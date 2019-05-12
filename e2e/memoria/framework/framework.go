@@ -8,14 +8,13 @@ import (
 
 // Framework is used in the execution of e2e tests.
 type Framework struct {
-	Name string
 	client *client.Client
 	mongoDB *MongoDB
 
 }
 
 // NewFramework constructs a new e2e test Framework with default options.
-func NewFramework(name string) *Framework {
+func NewFramework() *Framework {
 	client, err := client.NewEnvClient()
 	if err != nil {
 		panic(fmt.Sprintf("Failed to connect to Docker daemon: %v", err))
@@ -24,7 +23,6 @@ func NewFramework(name string) *Framework {
 	mongoDB := NewMongoDB(client)
 
 	return &Framework{
-		Name: name,
 		client: client,
 		mongoDB: mongoDB,
 	}

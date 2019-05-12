@@ -1,4 +1,4 @@
-package identity
+package identity_test
 
 import (
 	"bytes"
@@ -8,60 +8,78 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/templecloud/memoria-server/internal/memoria/boot"
-	"github.com/templecloud/memoria-server/internal/memoria/controller/identity"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	"github.com/templecloud/memoria-server/e2e/memoria/framework"
+	"github.com/templecloud/memoria-server/internal/memoria/boot"
+	"github.com/templecloud/memoria-server/internal/memoria/controller/identity"
 )
 
-// TestIdentity tests the basic sequence:
-//
-// 1. Not Logged in. '/api/v1/health' endpoint returns 401.
-// 2/ Login successfully
-// 3. Not Logged in. '/api/v1/health' endpoint returns 200.
-//
-// NB: Still currently need to initialise MongoDB and ensure the User exists before executing the test.
-//
 func TestIdentity(t *testing.T) {
-
-	fw := framework.NewFramework("")
-	assert.NotNil(t, fw)
-	fw.BeforeEach()
-
-	router := boot.NewServer()
-
-	// curl -v --cookie "token=${JWT}" localhost:8080/api/v1/health
-	actual := invoke(router, "GET", "/api/v1/health", nil, nil)
-	assert.NotNil(t, actual)
-	assert.Equal(t, http.StatusUnauthorized, actual.Code)
-
-	// curl -v -X POST localhost:8080/api/v1/signup -d '{ "name": "test-user", "email": "test@test.com", "password": "test" }
-	login := identity.Login{Email: "test@test.com", Password: "test"}
-	signup := identity.Signup{Name: "Test", Login: login}
-	body, _ := json.Marshal(signup)
-	reader := bytes.NewReader(body)
-	actual = invoke(router, "POST", "/api/v1/signup", reader, nil)
-	
-	assert.Equal(t, http.StatusOK, actual.Code)
-
-   	// curl -v localhost:8080/api/v1/login -d '{ "email": "test@test.com", "password": "test" }'	
-	body, _ = json.Marshal(login)
-	reader = bytes.NewReader(body)
-	actual = invoke(router, "POST", "/api/v1/login", reader, nil)
-	assert.NotNil(t, actual)
-	assert.Equal(t, http.StatusOK, actual.Code)
-
-   	// curl -v --cookie "token=${JWT}" localhost:8080/api/v1/health
-	cookies := actual.Result().Cookies()
-	actual = invoke(router, "GET", "/api/v1/health", nil, cookies)
-	assert.NotNil(t, actual)
-	assert.Equal(t, http.StatusOK, actual.Code)
-
-	fw.AfterEach()
+	RegisterFailHandler(Fail)          // Register `gomega` with `ginkgo`.
+	RunSpecs(t, "Identity Test Suite") // Run `ginkgo`.
 }
 
+var fw *framework.Framework
+
+var _ = BeforeSuite(func() {
+	fw = framework.NewFramework()
+	fw.BeforeEach()
+})
+
+var _ = AfterSuite(func() {
+	fw.AfterEach()
+})
+
+var _ = Describe("Identity", func() {
+
+	Describe("Checking user login", func() {
+
+		Context("When not logged in", func() {
+
+			It("should not be possible to get the health of the server", func() {
+				router := boot.NewServer()
+				// curl -v localhost:8080/api/v1/health
+				actual := invoke(router, "GET", "/api/v1/health", nil, nil)
+				Expect(actual).NotTo(BeNil())
+				Expect(actual.Code).To(Equal(http.StatusUnauthorized))
+			})
+		})
+
+		Context("When logged in", func() {
+
+			It("should not be possible to get the health of the server", func() {
+				router := boot.NewServer()
+				login := identity.Login{Email: "test@test.com", Password: "test"}
+				signup := identity.Signup{Name: "Test", Login: login}
+
+				// curl -v -X POST localhost:8080/api/v1/signup -d '{ "name": "test-user", "email": "test@test.com", "password": "test" }
+				body, _ := json.Marshal(signup)
+				reader := bytes.NewReader(body)
+				actual := invoke(router, "POST", "/api/v1/signup", reader, nil)
+				Expect(actual).NotTo(BeNil())
+				Expect(actual.Code).To(Equal(http.StatusOK))
+
+				// curl -v localhost:8080/api/v1/login -d '{ "email": "test@test.com", "password": "test" }'
+				body, _ = json.Marshal(login)
+				reader = bytes.NewReader(body)
+				actual = invoke(router, "POST", "/api/v1/login", reader, nil)
+				Expect(actual).NotTo(BeNil())
+				Expect(actual.Code).To(Equal(http.StatusOK))
+				cookies := actual.Result().Cookies()
+				Expect(cookies).NotTo(BeNil())
+
+				// curl -v --cookie "token=${JWT}" localhost:8080/api/v1/health
+				actual = invoke(router, "GET", "/api/v1/health", nil, cookies)
+				Expect(actual).NotTo(BeNil())
+				Expect(actual.Code).To(Equal(http.StatusOK))
+			})
+		})
+	})
+})
+
+// invoke the specified server endpoint and record the results.
 func invoke(
 	handler http.Handler, method,
 	path string,
