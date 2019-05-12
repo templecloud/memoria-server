@@ -16,23 +16,6 @@ import (
 	"github.com/templecloud/memoria-server/e2e/memoria/framework"
 )
 
-func invoke(
-	handler http.Handler, method,
-	path string,
-	body io.Reader,
-	cookies []*http.Cookie,
-) *httptest.ResponseRecorder {
-	req, _ := http.NewRequest(method, path, body)
-	if cookies != nil {
-		for _, cookie := range cookies {
-			req.AddCookie(cookie)
-		}
-	}
-	recorder := httptest.NewRecorder()
-	handler.ServeHTTP(recorder, req)
-	return recorder
-}
-
 // TestIdentity tests the basic sequence:
 //
 // 1. Not Logged in. '/api/v1/health' endpoint returns 401.
@@ -43,8 +26,10 @@ func invoke(
 //
 func TestIdentity(t *testing.T) {
 
-	db, err := framework.NewMongoDB().Create()
-	assert.NotNil(t, err)
+	fw := framework.NewFramework("")
+	assert.NotNil(t, fw)
+	fw.BeforeEach()
+
 	router := boot.NewServer()
 
 	// curl -v --cookie "token=${JWT}" localhost:8080/api/v1/health
@@ -74,6 +59,22 @@ func TestIdentity(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.Equal(t, http.StatusOK, actual.Code)
 
-	db.Stop()
-	db.Clean()
+	fw.AfterEach()
+}
+
+func invoke(
+	handler http.Handler, method,
+	path string,
+	body io.Reader,
+	cookies []*http.Cookie,
+) *httptest.ResponseRecorder {
+	req, _ := http.NewRequest(method, path, body)
+	if cookies != nil {
+		for _, cookie := range cookies {
+			req.AddCookie(cookie)
+		}
+	}
+	recorder := httptest.NewRecorder()
+	handler.ServeHTTP(recorder, req)
+	return recorder
 }

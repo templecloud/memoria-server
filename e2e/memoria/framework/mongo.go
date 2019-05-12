@@ -24,12 +24,7 @@ type MongoDB struct {
 }
 
 // NewMongoDB creates a manageable containerized MongoDB instance.
-func NewMongoDB() *MongoDB {
-	client, err := client.NewEnvClient()
-	if err != nil {
-		fmt.Println("Unable to create docker client.")
-		panic(err)
-	}
+func NewMongoDB(client *client.Client) *MongoDB {
 	return &MongoDB{
 		client: client,
 		Image: mongoContainerImage,
