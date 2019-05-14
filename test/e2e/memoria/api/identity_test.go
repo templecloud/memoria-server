@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/templecloud/memoria-server/e2e/memoria/framework"
+	"github.com/templecloud/memoria-server/test/e2e/memoria/framework"
 	"github.com/templecloud/memoria-server/internal/memoria/boot"
 	"github.com/templecloud/memoria-server/internal/memoria/controller/identity"
 )

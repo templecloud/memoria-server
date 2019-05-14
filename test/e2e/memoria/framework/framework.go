@@ -10,7 +10,6 @@ import (
 type Framework struct {
 	client *client.Client
 	mongoDB *MongoDB
-
 }
 
 // NewFramework constructs a new e2e test Framework with default options.

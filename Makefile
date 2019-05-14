@@ -30,15 +30,11 @@ vendor:
 build: clean vendor
 	ARCH=$(ARCH) OS=$(OS) VERSION=$(VERSION) go build -o $(DIST)/$(NAME) ./cmd/... 
 
-# Test
-.PHONY: test
-test:
-	go test -v ./test...
 
 # E2E Test
 .PHONY: e2e
 e2e:
-	go test -v ./e2e/...
+	go test -v ./test/e2e/...
 
 # Clean
 .PHONY: clean
