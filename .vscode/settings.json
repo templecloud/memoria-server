@@ -5,6 +5,7 @@
         "dgrijalva",
         "gomega",
         "gonic",
+        "logrus",
         "mongodb",
         "onsi",
         "signup",
