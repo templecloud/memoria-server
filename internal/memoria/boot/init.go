@@ -1,9 +1,8 @@
 package boot
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/templecloud/memoria-server/internal/memoria/controller/health"
 	"github.com/templecloud/memoria-server/internal/memoria/controller/identity"
@@ -12,7 +11,8 @@ import (
 
 // Start initialises the Memoria API webserver.
 func Start() {
-	fmt.Println("Starting memoria-server...")
+	configureLogger()
+	log.Info("Starting memoria-server...")
 	router := NewServer()
 	router.Run()
 }
