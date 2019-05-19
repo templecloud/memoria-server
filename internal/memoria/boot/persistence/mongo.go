@@ -9,8 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// MongoClient creates a new connected MongoDB client. 
-func MongoClient() *mongo.Client {
+// NewMongoClient creates a new connected MongoDB client. 
+func NewMongoClient() *mongo.Client {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		fmt.Println("Failed to create client.")
