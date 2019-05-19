@@ -16,7 +16,7 @@ func NewServer() *gin.Engine {
 	mongo := persistence.NewMongoClient()
 	// Initialise Gin server.
 	server := server.NewGinServer()
-	server = controller.ConfigureEndpoints(server, mongo)
+	server = controller.ConfigureEndpoints(server, mongo, nil)
 
 	return server
 }
