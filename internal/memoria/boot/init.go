@@ -6,7 +6,7 @@ import (
 
 	"github.com/templecloud/memoria-server/internal/memoria/controller/health"
 	"github.com/templecloud/memoria-server/internal/memoria/controller/identity"
-	"github.com/templecloud/memoria-server/internal/memoria/persistence"
+	"github.com/templecloud/memoria-server/internal/memoria/boot/persistence"
 )
 
 // Start initialises the Memoria API webserver.
