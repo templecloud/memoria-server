@@ -4,14 +4,15 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/templecloud/memoria-server/internal/memoria/boot/persistence"
+	"github.com/templecloud/memoria-server/internal/memoria/boot/logging"
 	"github.com/templecloud/memoria-server/internal/memoria/controller/health"
 	"github.com/templecloud/memoria-server/internal/memoria/controller/identity"
-	"github.com/templecloud/memoria-server/internal/memoria/boot/persistence"
 )
 
 // Start initialises the Memoria API webserver.
 func Start() {
-	configureLogger()
+	logging.ConfigureDefaultLogger()
 	log.Info("Starting memoria-server...")
 	router := NewServer()
 	router.Run()

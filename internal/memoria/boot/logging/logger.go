@@ -1,4 +1,4 @@
-package boot
+package logging
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// configureLogger initialises the global logger.
-func configureLogger() {
+// ConfigureDefaultLogger initialises the global logger.
+func ConfigureDefaultLogger() {
 
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true,
