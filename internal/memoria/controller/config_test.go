@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDefaultConfig(t *testing.T) {
+func TestControllerConfig(t *testing.T) {
 	// defaultConfig
 	defaultConfig := newDefaultConfig()
 	// emptyConfig

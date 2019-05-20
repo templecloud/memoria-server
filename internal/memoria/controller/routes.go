@@ -14,18 +14,18 @@ const (
 
 	// HealthEndpoint denotes the 'health' endpoint.
 	HealthEndpoint = "health"
-	// HealthRoute denotes the 'health' endpoint.
-	HealthRoute = "/" + HealthEndpoint
+	// HealthPath denotes the 'health' endpoint.
+	HealthPath = "/" + HealthEndpoint
 
 	// LoginEndpoint denotes the 'login' endpoint.
 	LoginEndpoint = "login"
-	// LoginRoute denotes the 'login' endpoint.
-	LoginRoute = "/" + LoginEndpoint
+	// LoginPath denotes the 'login' endpoint.
+	LoginPath = "/" + LoginEndpoint
 
 	// SignupEndpoint denotes the 'signup' endpoint.
 	SignupEndpoint = "signup"
-	// SignupRoute denotes the 'signup' endpoint.
-	SignupRoute = "/" + SignupEndpoint
+	// SignupPath denotes the 'signup' endpoint.
+	SignupPath= "/" + SignupEndpoint
 )
 
 // ConfigureEndpoints configures a new Gin Engine server.
@@ -46,17 +46,17 @@ func ConfigureEndpoints(
 	// Non-authenticated routes.
 	public := engine.Group(APIv1)
 	if config.isEnabled(LoginEndpoint) {
-		public.POST(LoginRoute, identityAPI.Login)
+		public.POST(LoginPath, identityAPI.Login)
 	}
 	if config.isEnabled(SignupEndpoint) {
-		public.POST(SignupRoute, identityAPI.Signup)
+		public.POST(SignupPath, identityAPI.Signup)
 	}
 
 	// Authenticated routes.
 	private := engine.Group(APIv1)
 	private.Use(identity.JWTMiddleware())
 	if config.isEnabled(HealthEndpoint) {
-		private.GET(HealthRoute, healthAPI.Health)
+		private.GET(HealthPath, healthAPI.Health)
 	}
 
 	return engine

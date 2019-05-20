@@ -12,6 +12,10 @@ type API struct {
 
 // NewAPI creates a default API that uses MongoDB as it's persistent store.
 func NewAPI(client *mongo.Client) *API {
-	db := NewMongoDB(client)
-	return &API{db}
+	// TODO: Make this fail if no client is specified, and test using mock.
+	if client != nil {
+		db := NewMongoDB(client)
+		return &API{db}
+	}
+	return &API{}
 }
