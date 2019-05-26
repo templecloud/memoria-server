@@ -23,7 +23,7 @@ func NewServer() *gin.Engine {
 
 // Start initialises the Memoria API webserver.
 func Start() {
-	logging.ConfigureDefaultLogger()
+	logging.InitialiseLogging()
 	log.Info("Starting memoria-server...")
 	server := NewServer()
 	server.Run()
