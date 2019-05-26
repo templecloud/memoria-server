@@ -48,6 +48,7 @@ func (c *Config) url() string {
 	return fmt.Sprintf("%s://%s:%d", c.Connection.Protocol, c.Connection.Host, c.Connection.Port)
 }
 
+// Panic if the configuration is invalid.
 func (c *Config) validate() {
 	if c.Connection == nil {
 		panic(fmt.Sprintf("The datasource connection was not defined."))
