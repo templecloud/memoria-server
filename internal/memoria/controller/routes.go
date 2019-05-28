@@ -36,7 +36,7 @@ func ConfigureEndpoints(
 ) *gin.Engine {
 	// Ensure Config.
 	if config == nil {
-		config = newDefaultConfig()
+		config = NewDefaultConfig()
 	}
 
 	// Create Endpoint handlers.

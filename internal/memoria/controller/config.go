@@ -15,9 +15,10 @@ type EndpointConfig struct {
 }
 
 //-------------------------------------------------------------------------------------------------
-// Private
+// Public
 
-func newDefaultConfig() *Config {
+// NewDefaultConfig creates a default configuration.
+func NewDefaultConfig() *Config {
 	return &Config{
 		Endpoints: map[string]*EndpointConfig{
 			HealthEndpoint: &EndpointConfig{IsDisabled: false},
@@ -26,6 +27,9 @@ func newDefaultConfig() *Config {
 		},
 	}
 }
+
+//-------------------------------------------------------------------------------------------------
+// Private
 
 // isDisabled checks if an endpoint is disabled. If not configured then it is considered enabled.
 func (c *Config) isDisabled(endpoint string) bool {

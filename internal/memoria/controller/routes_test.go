@@ -24,7 +24,7 @@ func hasEndpoint(engine *gin.Engine, endpoint *Endpoint) bool {
 
 func TestControllerRouteConfiguration(t *testing.T) {
 	// defaultConfig
-	defaultConfig := newDefaultConfig()
+	defaultConfig := NewDefaultConfig()
 	// disabledEndpointsConfig
 	disabledEndpointsConfig := &Config{
 		Endpoints: map[string]*EndpointConfig{

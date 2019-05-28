@@ -29,10 +29,10 @@ type ConnectionConfig struct {
 }
 
 //-------------------------------------------------------------------------------------------------
-// Private
+// Public Functions
 
-// Return a default MongoDB connection: "mongodb://localhost:27017"
-func newDefaultMongoDBConfig() *Config {
+// NewDefaultConfig returns a default MongoDB configuration.
+func NewDefaultConfig() *Config {
 	return &Config{
 		Connection: &ConnectionConfig{
 			Protocol: MongoDBProtocol,

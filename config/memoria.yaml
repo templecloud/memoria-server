@@ -1,0 +1,26 @@
+logging:
+  defaultLogger:
+    type: text
+    timestampFormat: 2006-01-02 15:04:05
+    disableColors: false
+    enabledFunctionNameLogging: false
+    logFile:
+      path: .
+      filename: log.log
+
+persistence:
+  connection:
+    Protocol: mongodb
+    Host:  localhost
+    Port: 27017
+
+controller:
+  endpoints:
+    health:
+      isDisabled: false
+    login:
+      isDisabled: false
+    signup:
+      isDisabled: false
+
+

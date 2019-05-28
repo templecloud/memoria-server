@@ -8,7 +8,7 @@ import (
 
 func TestControllerConfig(t *testing.T) {
 	// defaultConfig
-	defaultConfig := newDefaultConfig()
+	defaultConfig := NewDefaultConfig()
 	// emptyConfig
 	emptyConfig := &Config{}
 	// emptyEndpointsConfig

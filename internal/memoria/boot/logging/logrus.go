@@ -7,13 +7,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// InitialiseLogging initialises the logging.
-func InitialiseLogging() {
-	ConfigureLogging(newDefaultLoggingConfig())
+// ConfigureDefault configures the logging with the default values.
+func ConfigureDefault() {
+	Configure(NewDefaultConfig())
 }
 
-// ConfigureLogging initialises the logging.
-func ConfigureLogging(config *Config) {
+// Configure configures the logging.
+func Configure(config *Config) {
 	cfg := config.DefaultLogger
 	// Handle default Logger type.
 	if cfg.Type == JSONLogType {

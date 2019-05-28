@@ -14,7 +14,7 @@ const (
 
 const (
 	// DefaultTimestampFormat defines the default time format of the timestamps.
-	DefaultTimestampFormat = "0001-01-01T00:00:00Z"
+	DefaultTimestampFormat = "2006-01-02 15:04:05"
 	// DefaultLogFilename defines the default name of the log file.
 	DefaultLogFilename = "log.log"
 )
@@ -30,7 +30,7 @@ type Config struct {
 // LogConfig denotes the configuration of the loggers.
 type LogConfig struct {
 	Type                      string         `json:"type" binding:"required"`
-	TimestampFormat           string         `json:"host" binding:"optional"`
+	TimestampFormat           string         `json:"timestampFormat" binding:"optional"`
 	DisableFullTimestamp      bool           `json:"disableFullTimestamp" binding:"optional"`
 	DisableColors             bool           `json:"disableColors" binding:"optional"`
 	EnableFunctionNameLogging bool           `json:"enabledFunctionNameLogging" binding:"optional"`
@@ -44,10 +44,10 @@ type LogFileConfig struct {
 }
 
 //-------------------------------------------------------------------------------------------------
-// Private
+// Public Functions
 
-// Return a default logging configuration.
-func newDefaultLoggingConfig() *Config {
+// NewDefaultConfig returns a default logging configuration.
+func NewDefaultConfig() *Config {
 	return &Config{
 		DefaultLogger: &LogConfig{
 			Type:                      TextLogType,

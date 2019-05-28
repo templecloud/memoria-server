@@ -10,17 +10,17 @@ import (
 // TestMongoDBConfigURL ensure the 'happy path' works as expected when generating a URL.
 func TestMongoDBConfigURL(t *testing.T) {
 	// defaultConfig
-	defaultMongoDBConfig := newDefaultMongoDBConfig()
+	defaultMongoDBConfig := NewDefaultConfig()
 	// Config01
-	mongoDBConfig01 := newDefaultMongoDBConfig()
+	mongoDBConfig01 := NewDefaultConfig()
 	somehost01 := "somehost"
 	mongoDBConfig01.Connection.Host = somehost01
 	// Config02
-	mongoDBConfig02 := newDefaultMongoDBConfig()
+	mongoDBConfig02 := NewDefaultConfig()
 	somePort02 := 27018
 	mongoDBConfig02.Connection.Port = somePort02
 	// Config03
-	mongoDBConfig03 := newDefaultMongoDBConfig()
+	mongoDBConfig03 := NewDefaultConfig()
 	mongoDBConfig03.Connection.Host = somehost01
 	mongoDBConfig03.Connection.Port = somePort02
 	// Tests.

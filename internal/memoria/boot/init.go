@@ -17,14 +17,13 @@ func NewServer() *gin.Engine {
 	// Initialise Gin server.
 	server := server.NewGinServer()
 	server = controller.ConfigureEndpoints(server, mongo, nil)
-
 	return server
 }
 
 // Start initialises the Memoria API webserver.
-func Start() {
-	logging.InitialiseLogging()
-	log.Info("Starting memoria-server...")
+func Start(config *Config) {
+	logging.ConfigureDefault()
 	server := NewServer()
+	log.Info("Starting memoria-server...")
 	server.Run()
 }
