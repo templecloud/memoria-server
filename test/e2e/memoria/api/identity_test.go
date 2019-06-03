@@ -43,7 +43,7 @@ var _ = Describe("Identity", func() {
 		Context("When not logged in", func() {
 
 			It("should not be possible to get the health of the server", func() {
-				router := boot.NewServer()
+				router := boot.NewDefaultServer()
 				actual := invoke(router, "GET", "/api/v1/health", nil, nil)
 				Expect(actual).NotTo(BeNil())
 				Expect(actual.Code).To(Equal(http.StatusUnauthorized))
@@ -53,7 +53,7 @@ var _ = Describe("Identity", func() {
 		Context("When logged in", func() {
 
 			It("should not be possible to get the health of the server", func() {
-				router := boot.NewServer()
+				router := boot.NewDefaultServer()
 				login := identity.Login{Email: "test@test.com", Password: "test"}
 				signup := identity.Signup{Name: "Test", Login: login}
 
@@ -82,7 +82,7 @@ var _ = Describe("Identity", func() {
 			signup := identity.Signup{Name: "Test2", Login: login}
 
 			It("should be possible to create a new user", func() {
-				router := boot.NewServer()
+				router := boot.NewDefaultServer()
 
 				actual := invoke(router, "POST", "/api/v1/signup", signup, nil)
 				Expect(actual).NotTo(BeNil())
@@ -90,7 +90,7 @@ var _ = Describe("Identity", func() {
 			})
 
 			It("should not be possible to create a new user when the username is taken", func() {
-				router := boot.NewServer()
+				router := boot.NewDefaultServer()
 
 				actual := invoke(router, "POST", "/api/v1/signup", signup, nil)
 				Expect(actual).NotTo(BeNil())

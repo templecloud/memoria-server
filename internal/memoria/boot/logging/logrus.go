@@ -14,6 +14,11 @@ func ConfigureDefault() {
 
 // Configure configures the logging.
 func Configure(config *Config) {
+	// Ensure Config
+	if config == nil {
+		config = NewDefaultConfig()
+	}
+
 	cfg := config.DefaultLogger
 	// Handle default Logger type.
 	if cfg.Type == JSONLogType {

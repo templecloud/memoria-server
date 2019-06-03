@@ -9,9 +9,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// NewDefaultMongoClient create a new default connected MongoDB client. 
+func NewDefaultMongoClient() *mongo.Client {
+	return NewMongoClient(NewDefaultConfig())
+}
+
 // NewMongoClient creates a new connected MongoDB client. 
-func NewMongoClient() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+func NewMongoClient(config *Config) *mongo.Client {
+	// Ensure Config
+	if config == nil {
+		config = NewDefaultConfig()
+	}
+
+	client, err := mongo.NewClient(options.Client().ApplyURI(config.uri()))
 	if err != nil {
 		fmt.Println("Failed to create client.")
 		log.Fatal(err)

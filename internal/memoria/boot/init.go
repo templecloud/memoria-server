@@ -10,20 +10,25 @@ import (
 	"github.com/templecloud/memoria-server/internal/memoria/controller"
 )
 
+// NewDefaultServer creates a new default configured server.
+func NewDefaultServer() *gin.Engine {
+	return NewServer(NewDefaultConfig())
+}
+
 // NewServer creates a new configured server.
-func NewServer() *gin.Engine {
+func NewServer(config *Config) *gin.Engine {
 	// Initialise MongoDB client.
-	mongo := persistence.NewMongoClient()
+	mongo := persistence.NewMongoClient(config.Persistence)
 	// Initialise Gin server.
 	server := server.NewGinServer()
-	server = controller.ConfigureEndpoints(server, mongo, nil)
+	server = controller.ConfigureEndpoints(server, mongo, config.Controller)
 	return server
 }
 
 // Start initialises the Memoria API webserver.
 func Start(config *Config) {
-	logging.ConfigureDefault()
-	server := NewServer()
+	logging.Configure(config.Logging)
+	server := NewServer(config)
 	log.Info("Starting memoria-server...")
 	server.Run()
 }

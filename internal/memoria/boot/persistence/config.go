@@ -42,8 +42,8 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// Get the datasource connection URL. e.g. "mongodb://localhost:27017"
-func (c *Config) url() string {
+// Get the datasource connection URI. e.g. "mongodb://localhost:27017"
+func (c *Config) uri() string {
 	c.validate()
 	return fmt.Sprintf("%s://%s:%d", c.Connection.Protocol, c.Connection.Host, c.Connection.Port)
 }

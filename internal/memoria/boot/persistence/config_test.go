@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestMongoDBConfigURL ensure the 'happy path' works as expected when generating a URL.
-func TestMongoDBConfigURL(t *testing.T) {
+// TestMongoDBConfigURI ensure the 'happy path' works as expected when generating a URI.
+func TestMongoDBConfigURI(t *testing.T) {
 	// defaultConfig
 	defaultMongoDBConfig := NewDefaultConfig()
 	// Config01
@@ -35,7 +35,7 @@ func TestMongoDBConfigURL(t *testing.T) {
 	}
 	// Run tests.
 	for _, test := range tests {
-		assert.Equal(t, test.expected, test.config.url())
+		assert.Equal(t, test.expected, test.config.uri())
 	}
 }
 
