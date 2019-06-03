@@ -3,38 +3,53 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
-	// "github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/templecloud/memoria-server/internal/memoria/boot"
 )
 
+//-------------------------------------------------------------------------------------------------
+// Flags
+
 var verbose bool
+var config string
 
 func init() {
-	// cobra.OnInitialize(initConfig, initLoggingConfig)
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Display verbose info during initialisation.")
+	rootCmd.PersistentFlags().StringVarP(&config, "config", "c", "", 
+		"Define the configuration file path.")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, 
+		"Display verbose info during initialisation.")
 }
+
+//-------------------------------------------------------------------------------------------------
+// Functions
 
 func loadInitConfig() *boot.Config {
 	var cfg boot.Config
-	loader := newLoader("memoria")
+	loader := newLoader(config)
 	loader.Unmarshal(&cfg)
 	return &cfg
 }
 
-func newLoader(filename string) *viper.Viper {
-	// Config name (without extension)
+// newLoader creates and loads the configuration specified by the config flag; or the default.
+func newLoader(configFlag string) *viper.Viper {
+	// Create Config - NB: 'ConfigName' does not require filetype extension.
 	loader := viper.New()
-	loader.SetConfigName(filename)
-	
-	// Search paths...
-	loader.AddConfigPath(".")
-	loader.AddConfigPath("./config")
-	loader.AddConfigPath("$MEMORIA_HOME/config")
-	loader.AddConfigPath("$HOME/.memoria")
+	if config == "" {
+		loader.SetConfigName("memoria")
+		loader.AddConfigPath(".")
+		loader.AddConfigPath("./config")
+		loader.AddConfigPath("$MEMORIA_HOME/config")
+		loader.AddConfigPath("$HOME/.memoria")
+	} else {
+		configPath, configName := handleConfigFlag(configFlag)
+		loader.SetConfigName(configName)
+		loader.AddConfigPath(configPath)
+	}
 
 	// Load Config
 	if err := loader.ReadInConfig(); err != nil {
@@ -49,6 +64,13 @@ func newLoader(filename string) *viper.Viper {
 	return loader
 }
 
+// handleConfigFlag processes the 'config' flag to return the directory and the extension stripped 
+// filename.
+func handleConfigFlag(configFlag string) (string, string) {
+	return filepath.Split(strings.TrimSuffix(configFlag, filepath.Ext(configFlag)))
+}
+
+// toYAML converts the specified loaders config to a string.
 func toYAML(loader *viper.Viper) string {
     c := loader.AllSettings()
 	bs, err := yaml.Marshal(c)

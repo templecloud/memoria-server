@@ -9,6 +9,9 @@ import (
 	"github.com/templecloud/memoria-server/internal/memoria/boot"
 )
 
+//-------------------------------------------------------------------------------------------------
+// Cobra Commands
+
 var rootCmd = &cobra.Command{
 	Use:   "memoria",
 	Short: "Memoria is a memorization helper application.",
@@ -41,6 +44,9 @@ var startCmd = &cobra.Command{
 		boot.Start(cfg)
 	},
 }
+
+//-------------------------------------------------------------------------------------------------
+// Functions
 
 func configure() {
 	rootCmd.AddCommand(versionCmd)
